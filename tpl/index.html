@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ngweb管理工具Linux v1.0</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bulma/0.9.3/css/bulma.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+    <script>
+        let mp={
+            "888":"宝塔管理","888/tcp":"宝塔管理",
+            "9999":"nging管理","9999/tcp":"nging管理",
+            "443":"https","443/tcp":"https",
+            "80":"http","80/tcp":"http",
+            "25":"smtp","25/tcp":"smtp",
+            "110":"pop3","110/tcp":"pop3",
+            "21":"ftp","21/tcp":"ftp",
+            "22":"ssh","22/tcp":"ssh",
+            "3306":"mysql","3306/tcp":"mysql",
+            "6379":"redis","6379/tcp":"redis",
+            "9000":"minio","9000/tcp":"minio",
+            "9002":"minio管理","9002/tcp":"minio管理",
+            "9001":"supervisor","9001/tcp":"supervisor",
+            "20":"ftps","20/tcp":"ftps",
+            "53":"dns","53/tcp":"dns",
+            "143":"imap","143/tcp":"imap",
+            "11211":"memcache","11211/tcp":"memcache",
+        }
+        $(function (){
+$.get("/getlist",function(res){
+    let html=``
+    if(res.code==200){
+        for(let i=0;i<res.data.length;i++){
+            let cov=res.data[i];
+            if(mp[cov]==undefined){
+                mp[cov]="";
+            }
+        html+=`<tr><td>${cov}</td><td>${mp[cov]}</td><td><a href="javascript:del('${cov}')">删除</a></td></tr>`
+        }
+        $("#getlist").html(html)
+    }
+},"json")
+        })
+        function del(k) {
+            if(confirm("是否确定删除?")){
+                $.get("/del",{"k":k},function(res){
+                    if (res.code==200){
+                        alert(res.msg);
+                        location.reload()
+                    }
+                    return
+                },"json")
+            }
+
+        }
+        function add(){
+            let t = $("#adddata").val()
+            if (t==""){
+                return
+            }
+            $.get("/add",{"k":t},function(res){
+                if (res.code==200){
+                    alert(res.msg);
+                    location.reload()
+                }
+            },"json")
+        }
+        function ufwstart(){
+            $.get("/ufwa",function(res){
+                if (res.code==200){
+                    alert(res.msg);
+                    location.reload()
+                }
+            },"json")
+        }
+        function ufwend(){
+            $.get("/ufwb",function(res){
+                if (res.code==200){
+                    alert(res.msg);
+                    location.reload()
+                }
+            },"json")
+        }
+        function so(){
+            let t = $("#port").val()
+            if (t==""){
+                return
+            }
+            $.get("/so",{"k":t},function(res){
+                let html=``
+                if(res.code==200){
+                    if(Object.keys(res.data).length==0){
+                        alert("pid不存在")
+                        location.reload()
+                    }else {
+                        for (let i in res.data) {
+                            let cov = res.data[i];
+                            html += `<tr><td>${cov}</td><td>${i}</td><td><a href="javascript:delpid('${i}')">杀死进程</a></td></tr>`
+                        }
+                        $("#solist").html(html)
+                    }
+                }
+            },"json")
+        }
+        function delpid(k) {
+            if(confirm("是否确定删除?")){
+                $.get("/delpid",{"k":k},function(res){
+                    if (res.code==200){
+                        alert(res.msg);
+                    }
+                    return
+                },"json")
+            }
+
+        }
+    </script>
+</head>
+<body>
+<div class="container is-max-desktop">
+    <div class="notification is-primary">
+        Linux管理工具
+    </div>
+   <div class="table-container">
+    <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+        <thead>
+        <tr>
+            <th><abbr >端口</abbr></th>
+            <th>备注</th>
+            <th><abbr >操作</abbr></th>
+        </tr>
+        </thead>
+        <tbody id="getlist">
+        </tbody>
+    </table>
+   </div>
+    <div class="field has-addons has-addons-left">
+        <p class="control">
+            <input id="adddata" class="input" type="text" placeholder="添加防火墙端口">
+        </p>
+        <p class="control">
+            <a class="button is-primary" onclick="add()">
+                添加
+            </a>
+            <a class="button is-primary" onclick="ufwstart()">
+                启动防火墙
+            </a>
+            <a class="button is-primary" onclick="ufwend()">
+                关闭防火墙
+            </a>
+            支持80 80/tcp 80/udp 3000:4000 4种ufw防火墙
+
+        </p>
+    </div>
+
+    <div class="field has-addons has-addons-left">
+        <p class="control">
+            <input id="port" class="input" type="text" placeholder="应用端口">
+        </p>
+        <p class="control">
+            <a class="button is-primary" onclick="so()">
+                查询端口pid
+            </a>
+        </p>
+    </div>
+    <div class="table-container">
+        <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+            <thead>
+            <tr>
+                <th><abbr >应用</abbr></th>
+                <th>pid</th>
+                <th><abbr >操作</abbr></th>
+            </tr>
+            </thead>
+            <tbody id="solist">
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>
